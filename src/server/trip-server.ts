@@ -8,22 +8,76 @@ export type TripDetails = {
   is_confirmed: boolean;
 };
 
-export const getTrips = async (): Promise<TripDetails[]> => {
-  const response = await api.get('/trips');
-  return response.data;
+type TripCreate = Omit<TripDetails, 'id' | 'is_confirmed'> & {
+  email_to_invite: string[];
 };
 
-export const getTrip = async (id: string): Promise<TripDetails> => {
-  const response = await api.get(`/trips/${id}`);
-  return response.data;
+const getAll = async (): Promise<TripDetails[]> => {
+  try {
+    const { data } = await api.get<TripDetails[]>('/trips');
+
+    return data;
+  }
+  catch (error) {
+    console.error('Failed to fetch trips', error);
+    throw error;
+  }
 };
 
-export const createTrip = async (trip: TripDetails): Promise<TripDetails> => {
-  const response = await api.post('/trips', trip);
-  return response.data;
+const getById = async (id: string): Promise<TripDetails> => {
+  try {
+    const { data } = await api.get<{trip: TripDetails}>(`/trips/${id}`);
+
+    return data.trip;
+  }
+  catch (error) {
+    console.error(`Failed to fetch trip ${id}`, error);
+    throw error;
+  }
 };
 
-export const updateTrip = async (trip: TripDetails): Promise<TripDetails> => {
-  const response = await api.put(`/trips/${trip.id}`, trip);
-  return response.data;
+const create = async (trip: TripCreate): Promise<{ tripId: string}> => {
+  try {
+    const { data } = await api.post<{ tripId: string}>('/trips', { 
+      ...trip,
+      owner_name: 'John Doe',
+      owner_email: 'johndoe@mail.com',
+     });
+
+    return data;
+  }
+  catch (error) {
+    console.error('Failed to create trip', error);
+    throw error;
+  }
+};
+
+const update = async (trip: TripDetails): Promise<TripDetails> => {
+  try {
+    const { data } = await api.put<{trip: TripDetails}>(`/trips/${trip.id}`, { trip });
+
+    return data.trip;
+  }
+  catch (error) {
+    console.error(`Failed to update trip ${trip.id}`, error);
+    throw error;
+  }
+};
+
+const remove = async (id: string): Promise<void> => {
+  try {
+    await api.delete(`/trips/${id}`);
+  }
+  catch (error) {
+    console.error(`Failed to delete trip ${id}`, error);
+    throw error;
+  }
+};
+
+export const tripServer = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
 };

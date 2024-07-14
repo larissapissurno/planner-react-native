@@ -8,8 +8,8 @@ type TripActivitiesProps = {
 
 export function TripActivities({ tripDetails }: TripActivitiesProps) {
   return (
-    <View className="flex-1 bg-lime-100">
-      <Text>{tripDetails.when}</Text>
+    <View className="flex-1">
+      <Text className="text-white">{tripDetails.when}</Text>
     </View>
   );
 }

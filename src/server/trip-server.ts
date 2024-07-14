@@ -52,9 +52,9 @@ const create = async (trip: TripCreate): Promise<{ tripId: string}> => {
   }
 };
 
-const update = async (trip: TripDetailsType): Promise<TripDetailsType> => {
+const update = async (trip: Omit<TripDetailsType, "is_confirmed">): Promise<TripDetailsType> => {
   try {
-    const { data } = await api.put<{trip: TripDetailsType}>(`/trips/${trip.id}`, { trip });
+    const { data } = await api.put<{trip: TripDetailsType}>(`/trips/${trip.id}`, { ...trip });
 
     return data.trip;
   }

@@ -1,6 +1,6 @@
 import { api } from './api';
 
-export type TripDetails = {
+export type TripDetailsType = {
   id: string;
   destination: string;
   starts_at: string;
@@ -8,13 +8,13 @@ export type TripDetails = {
   is_confirmed: boolean;
 };
 
-type TripCreate = Omit<TripDetails, 'id' | 'is_confirmed'> & {
+type TripCreate = Omit<TripDetailsType, 'id' | 'is_confirmed'> & {
   emails_to_invite: string[];
 };
 
-const getAll = async (): Promise<TripDetails[]> => {
+const getAll = async (): Promise<TripDetailsType[]> => {
   try {
-    const { data } = await api.get<TripDetails[]>('/trips');
+    const { data } = await api.get<TripDetailsType[]>('/trips');
 
     return data;
   }
@@ -24,9 +24,9 @@ const getAll = async (): Promise<TripDetails[]> => {
   }
 };
 
-const getById = async (id: string): Promise<TripDetails> => {
+const getById = async (id: string): Promise<TripDetailsType> => {
   try {
-    const { data } = await api.get<{trip: TripDetails}>(`/trips/${id}`);
+    const { data } = await api.get<{trip: TripDetailsType}>(`/trips/${id}`);
 
     return data.trip;
   }
@@ -52,9 +52,9 @@ const create = async (trip: TripCreate): Promise<{ tripId: string}> => {
   }
 };
 
-const update = async (trip: TripDetails): Promise<TripDetails> => {
+const update = async (trip: TripDetailsType): Promise<TripDetailsType> => {
   try {
-    const { data } = await api.put<{trip: TripDetails}>(`/trips/${trip.id}`, { trip });
+    const { data } = await api.put<{trip: TripDetailsType}>(`/trips/${trip.id}`, { trip });
 
     return data.trip;
   }

@@ -21,7 +21,7 @@ import {
   AtSign as AtSignIcon,
 } from "lucide-react-native";
 import { Button } from "./button";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Modal } from "@/components/modal";
 import { Calendar } from "@/components/calendar";
 import { DateData } from "react-native-calendars";
@@ -30,6 +30,8 @@ import { validateInput } from "@/utils/validateInput";
 import { tripStorage } from "@/storage/trip";
 import { router } from "expo-router";
 import { tripServer } from "@/server/trip-server";
+import { set } from "zod";
+import { Loading } from "@/components/loading";
 
 enum StepForm {
   TRIP_DETAILS = 1,
@@ -45,6 +47,7 @@ enum MODAL {
 export default function Index() {
   // LOADING
   const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+  const [isGettingTrip, setIsGettingTrip] = useState(true);
 
   // DATA
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
@@ -165,6 +168,29 @@ export default function Index() {
     }
   }
 
+  async function getTrip() {
+    try {
+      const tripId = await tripStorage.get();
+
+      if (!tripId) {
+        return setIsGettingTrip(false);
+      }
+
+      const trip = await tripServer.getById(tripId);
+
+      if (trip) {
+        router.navigate("/trip/" + trip.id);
+      }
+      
+      setIsGettingTrip(false);
+    } catch (error) {
+      setIsGettingTrip(false)
+      console.error("Erro ao buscar viagem", error);
+      Alert.alert("Erro ao buscar viagem", "Tente novamente mais tarde");
+      throw error;
+    }
+  }
+
   function saveTripOnLocalStorage(tripId: string) {
     try {
       tripStorage.save(tripId);
@@ -174,6 +200,14 @@ export default function Index() {
       Alert.alert("Erro ao salvar viagem", "Tente novamente mais tarde");
       throw error;
     }
+  }
+
+  useEffect(() => {
+    getTrip();
+  }, [getTrip])
+
+  if(isGettingTrip) {
+    return <Loading />
   }
 
   return (

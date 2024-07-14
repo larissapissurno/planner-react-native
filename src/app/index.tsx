@@ -9,13 +9,15 @@ import {
   Calendar as CalendarIcon,
   Settings2 as SettingsIcon,
   UserRoundPlus as UserRoundPlusIcon,
-  ArrowRight as ArrowRightIcon
+  ArrowRight as ArrowRightIcon,
+  AtSign as AtSignIcon
 } from 'lucide-react-native'
 import { Button } from './button'
 import { Fragment, useRef, useState } from 'react'
 import { Modal } from '@/components/modal'
 import { Calendar } from '@/components/calendar'
 import { DateData } from 'react-native-calendars'
+import { GuestEmail } from '@/components/email'
 
 enum StepForm {
   TRIP_DETAILS = 1,
@@ -29,10 +31,16 @@ enum MODAL {
 }
 
 export default function Index() {
+  // DATA
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
-  const [showModal, setShowModal] = useState(MODAL.NONE)
-  const [destination, setDestination] = useState('')
   const [datesSelected, setDatesSelected] = useState<DatesSelected>({} as DatesSelected)
+  const [destination, setDestination] = useState('')
+  const [emailToInvite, setEmailToInvite] = useState('')
+  const [emailsToInvite, setEmailsToInvite] = useState<string[]>([])
+  
+  // MODAL
+  const [showModal, setShowModal] = useState(MODAL.NONE)
+
 
   const calendarInputRef = useRef<TextInput>(null)
   
@@ -153,6 +161,26 @@ export default function Index() {
 
           <Button onPress={handleCloseModal}>
             <Button.Title>Confirmar</Button.Title>
+          </Button>
+        </View>
+      </Modal>
+
+      <Modal
+        title='Selecionar Convidados'
+        subtitle='Os convidados irão receber e-mails para confirmar a participação na viagem.'
+      >
+        <View className='my-2 flex-wrap gap-2 border-b border-zinc-800 py-5 items-start'>
+          <GuestEmail email='larissapissurno@gmail.com' onRemove={() => {}} />
+        </View>
+
+        <View className='gap-4 mt-4'>
+          <Input variant='secondary'>
+            <AtSignIcon color={colors.zinc[400]} size={20} />
+            <Input.Field placeholder='Adicionar e-mail' keyboardType='email-address' />
+          </Input>
+
+          <Button>
+            <Button.Title>Convidar</Button.Title>
           </Button>
         </View>
       </Modal>

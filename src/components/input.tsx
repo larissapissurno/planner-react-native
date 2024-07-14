@@ -26,10 +26,11 @@ function Input({ children, variant = "primary" }: InputProps) {
   );
 }
 
-type FieldProps = TextInputProps;
+type FieldProps = TextInputProps & { ref?: React.Ref<TextInput> };
 
-function Field({...textInputProps}: FieldProps) {
+function Field({ref, ...textInputProps}: FieldProps) {
   return <TextInput
+    ref={ref}
     className="flex-1 text-zinc-100 font-regular text-lg"
     placeholderTextColor={colors.zinc[400]}
     keyboardAppearance="dark"

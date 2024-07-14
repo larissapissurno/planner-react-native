@@ -9,7 +9,7 @@ export type TripDetails = {
 };
 
 type TripCreate = Omit<TripDetails, 'id' | 'is_confirmed'> & {
-  email_to_invite: string[];
+  emails_to_invite: string[];
 };
 
 const getAll = async (): Promise<TripDetails[]> => {

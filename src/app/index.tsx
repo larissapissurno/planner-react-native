@@ -18,6 +18,7 @@ import { Modal } from '@/components/modal'
 import { Calendar } from '@/components/calendar'
 import { DateData } from 'react-native-calendars'
 import { GuestEmail } from '@/components/email'
+import { validateInput } from '@/utils/validateInput'
 
 enum StepForm {
   TRIP_DETAILS = 1,
@@ -42,7 +43,8 @@ export default function Index() {
   const [showModal, setShowModal] = useState(MODAL.NONE)
 
 
-  const calendarInputRef = useRef<TextInput>(null)
+  const calendarInputRef = useRef<TextInput>(null);
+  const guestsInputRef = useRef<TextInput>(null);
   
   function handleNextStepForm() {
     const isTripDetailsInvalid = !datesSelected.startsAt || !datesSelected.endsAt || !destination;
@@ -62,11 +64,12 @@ export default function Index() {
 
   function handleCloseModal() {
     calendarInputRef.current?.blur()
+    guestsInputRef.current?.blur()
 
     setShowModal(MODAL.NONE)
   }
 
-  function handleSeletedDates(selectedDay: DateData) {
+  function handleSelectedDates(selectedDay: DateData) {
     const dates = calendarUtils.orderStartsAtAndEndsAt({
       startsAt: datesSelected.startsAt,
       endsAt: datesSelected.endsAt,
@@ -74,6 +77,28 @@ export default function Index() {
     });
 
     setDatesSelected(dates)
+  }
+
+  function handleAddGuestEmail() {
+    if (!emailToInvite) {
+      return Alert.alert('Convidado', 'Preencha o e-mail para convidar alguém');
+    }
+
+    if(!validateInput.email(emailToInvite)) {
+      return Alert.alert('Convidado', 'E-mail inválido');
+    }
+
+    const isEmailAlreadyAdded = emailsToInvite.includes(emailToInvite);
+    if(isEmailAlreadyAdded) {
+      return Alert.alert('Convidado', 'E-mail já adicionado');
+    }
+
+    setEmailsToInvite(prev => [...prev, emailToInvite])
+    setEmailToInvite('')
+  }
+
+  function handleRemoveGuestEmail(email: string) {
+    setEmailsToInvite(prev => prev.filter(emailItem => emailItem !== email))
   }
 
   return (
@@ -128,7 +153,12 @@ export default function Index() {
 
             <Input>
               <UserRoundPlusIcon color={colors.zinc[400]} size={20} onPress={() => setShowModal(MODAL.GUESTS)} />
-              <Input.Field placeholder='Quem estará na viagem?' />
+              <Input.Field
+                ref={guestsInputRef}
+                placeholder='Quem estará na viagem?'
+                onFocus={() => Keyboard.dismiss()}
+                onPressIn={() => stepForm === StepForm.ADD_EMAIL && setShowModal(MODAL.GUESTS)}
+              />
             </Input>
           </Fragment>
         )}
@@ -155,7 +185,7 @@ export default function Index() {
         <View className='gap-4 mt-4'>
           <Calendar
             minDate={dayjs().toISOString()}
-            onDayPress={handleSeletedDates}
+            onDayPress={handleSelectedDates}
             markedDates={datesSelected.dates}
           />
 
@@ -168,18 +198,34 @@ export default function Index() {
       <Modal
         title='Selecionar Convidados'
         subtitle='Os convidados irão receber e-mails para confirmar a participação na viagem.'
+        visible={showModal === MODAL.GUESTS}
+        onClose={handleCloseModal}
       >
         <View className='my-2 flex-wrap gap-2 border-b border-zinc-800 py-5 items-start'>
-          <GuestEmail email='larissapissurno@gmail.com' onRemove={() => {}} />
+          {emailsToInvite.map(email => (
+            <GuestEmail key={email} email={email} onRemove={() => handleRemoveGuestEmail(email)} />
+          ) )}
+
+          {!emailsToInvite.length && (
+            <Text className='text-zinc-600 text-base font-regular'>Nenhum e-mail adicionado</Text>
+          )}
         </View>
 
         <View className='gap-4 mt-4'>
           <Input variant='secondary'>
             <AtSignIcon color={colors.zinc[400]} size={20} />
-            <Input.Field placeholder='Adicionar e-mail' keyboardType='email-address' />
+            <Input.Field
+              placeholder='Adicionar e-mail'
+              keyboardType='email-address'
+              inputMode='email'
+              onChangeText={setEmailToInvite}
+              value={emailToInvite}
+              returnKeyType='send'
+              onSubmitEditing={handleAddGuestEmail}
+            />
           </Input>
 
-          <Button>
+          <Button onPress={handleAddGuestEmail}>
             <Button.Title>Convidar</Button.Title>
           </Button>
         </View>

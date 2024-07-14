@@ -156,6 +156,13 @@ export default function Index() {
               <Input.Field
                 ref={guestsInputRef}
                 placeholder='Quem estará na viagem?'
+                autoCorrect={false}
+                showSoftInputOnFocus={false}
+                value={
+                  emailsToInvite.length
+                    ? `${emailsToInvite.length} convidado${emailsToInvite.length > 1 ? 's' : ''}`
+                    : ''
+                }
                 onFocus={() => Keyboard.dismiss()}
                 onPressIn={() => stepForm === StepForm.ADD_EMAIL && setShowModal(MODAL.GUESTS)}
               />
@@ -218,6 +225,7 @@ export default function Index() {
               placeholder='Adicionar e-mail'
               keyboardType='email-address'
               inputMode='email'
+              autoCapitalize='none'
               onChangeText={setEmailToInvite}
               value={emailToInvite}
               returnKeyType='send'

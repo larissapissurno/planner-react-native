@@ -10,6 +10,7 @@ import { Calendar } from "@/components/calendar";
 import dayjs from "dayjs";
 import { activitiesServer } from "@/server/activities-server";
 import { Activity, ActivityProps } from "@/components/activity";
+import { Loading } from "@/components/loading";
 
 type TripActivities = {
   title: {
@@ -122,34 +123,37 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
         </Button>
       </View>
 
-      <SectionList
-        sections={activities}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Activity data={item} />
-        )}
-        renderSectionHeader={({ section }) => (
-          <View className="w-full">
-            <Text className="text-zinc-50 text-2xl font-semibold py-2">
-              Dia {section.title.dayNumber + " "}
-
-              <Text className="text-zinc-500 text-base font-regular capitalize">
-                {section.title.dayName}
-              </Text>
-            </Text>
-
-            {
-              section.data.length === 0 && (
-                <Text className="text-zinc-500 font-regular text-sm mb-8">
-                  Nenhuma atividade cadastrada nessa data.
+      {isLoadingActivities ? <Loading /> : (
+        <SectionList
+          sections={activities}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <Activity data={item} />
+          )}
+          renderSectionHeader={({ section }) => (
+            <View className="w-full">
+              <Text className="text-zinc-50 text-2xl font-semibold py-2">
+                Dia {section.title.dayNumber + " "}
+  
+                <Text className="text-zinc-500 text-base font-regular capitalize">
+                  {section.title.dayName}
                 </Text>
-              )
-            }
-          </View>
-        )}
-        contentContainerClassName="gap-3 pb-48"
-        showsVerticalScrollIndicator={false}
-      />
+              </Text>
+  
+              {
+                section.data.length === 0 && (
+                  <Text className="text-zinc-500 font-regular text-sm mb-8">
+                    Nenhuma atividade cadastrada nessa data.
+                  </Text>
+                )
+              }
+            </View>
+          )}
+          contentContainerClassName="gap-3 pb-48"
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+
 
       <Modal
         title="Cadastrar atividade"

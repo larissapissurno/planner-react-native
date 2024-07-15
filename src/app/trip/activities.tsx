@@ -1,4 +1,4 @@
-import { View, Text, Keyboard } from "react-native";
+import { View, Text, Keyboard, Alert } from "react-native";
 import { Button } from "../button";
 import { TripData } from "./[id]";
 import { PlusIcon, Tag as TagIcon, Calendar as CalendarIcon, Clock as ClockIcon } from "lucide-react-native";
@@ -8,8 +8,7 @@ import { useState } from "react";
 import { Input } from "@/components/input";
 import { Calendar } from "@/components/calendar";
 import dayjs from "dayjs";
-import { DateData } from "react-native-calendars";
-import { DatesSelected, calendarUtils } from "@/utils/calendarUtils";
+import { activitiesServer } from "@/server/activities-server";
 
 type TripActivitiesProps = {
   tripDetails: TripData
@@ -25,23 +24,47 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
   // MODAL
   const [showModal, setShowModal] = useState<MODAL>(MODAL.NONE);
 
+  // LOADING
+  const [isCreatingActivity, setIsCreatingActivity] = useState(false);
+
   // DATA
   const [activities, setActivities] = useState<string[]>([]);
   const [activityTitle, setActivityTitle] = useState<string>("");
   const [activityDate, setActivityDate] = useState<string>("");
   const [activityHour, setActivityHour] = useState<string>("");
-  const [datesSelected, setDatesSelected] = useState<DatesSelected>(
-    {} as DatesSelected
-  );
 
-  function handleSelectedDates(selectedDay: DateData) {
-    const dates = calendarUtils.orderStartsAtAndEndsAt({
-      startsAt: datesSelected.startsAt,
-      endsAt: datesSelected.endsAt,
-      selectedDay,
-    });
+  function resetNewActivityFields() {
+    setActivityTitle("");
+    setActivityDate("");
+    setActivityHour("");
+  }
 
-    setDatesSelected(dates);
+  async function handleCreateActivity() {
+    try {
+      if (!activityTitle || !activityDate || !activityHour) {
+        return Alert.alert("Nova atividade", "Preencha todos os campos");
+      }
+
+      setIsCreatingActivity(true);
+
+      await activitiesServer.create({
+        tripId: tripDetails.id,
+        title: activityTitle,
+        occurs_at: dayjs(activityDate).add(Number(activityHour), "h").toString(),
+      });
+      
+      Alert.alert("Nova atividade", "Atividade criada com sucesso");
+
+      setShowModal(MODAL.NONE);
+
+      resetNewActivityFields();
+
+    } catch (error) {
+      console.log(error);
+
+    } finally {
+      setIsCreatingActivity(false);
+    }
   }
 
   return (
@@ -72,8 +95,6 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
             />
           </Input>
 
-
-
           <View className="w-full mt-2 flex-row gap-2">
             <Input variant="secondary" className="flex-1">
               <CalendarIcon color={colors.zinc[400]} size={20} />
@@ -99,6 +120,10 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
             </Input>
           </View>
         </View>
+
+        <Button onPress={handleCreateActivity} isLoading={isCreatingActivity}>
+          <Button.Title>Salvar</Button.Title>
+        </Button>
       </Modal>
 
       <Modal

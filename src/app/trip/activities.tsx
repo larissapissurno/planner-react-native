@@ -1,14 +1,23 @@
-import { View, Text, Keyboard, Alert } from "react-native";
+import { View, Text, Keyboard, Alert, SectionList } from "react-native";
 import { Button } from "../button";
 import { TripData } from "./[id]";
-import { PlusIcon, Tag as TagIcon, Calendar as CalendarIcon, Clock as ClockIcon } from "lucide-react-native";
+import { PlusIcon, Tag as TagIcon, Calendar as CalendarIcon, Clock as ClockIcon} from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Modal } from "@/components/modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/input";
 import { Calendar } from "@/components/calendar";
 import dayjs from "dayjs";
 import { activitiesServer } from "@/server/activities-server";
+import { Activity, ActivityProps } from "@/components/activity";
+
+type TripActivities = {
+  title: {
+    dayNumber: number;
+    dayName: string;
+  },
+  data: ActivityProps[]
+}
 
 type TripActivitiesProps = {
   tripDetails: TripData
@@ -26,18 +35,13 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
 
   // LOADING
   const [isCreatingActivity, setIsCreatingActivity] = useState(false);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
 
   // DATA
-  const [activities, setActivities] = useState<string[]>([]);
+  const [activities, setActivities] = useState<TripActivities[]>([]);
   const [activityTitle, setActivityTitle] = useState<string>("");
   const [activityDate, setActivityDate] = useState<string>("");
   const [activityHour, setActivityHour] = useState<string>("");
-
-  function resetNewActivityFields() {
-    setActivityTitle("");
-    setActivityDate("");
-    setActivityHour("");
-  }
 
   async function handleCreateActivity() {
     try {
@@ -57,6 +61,8 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
 
       setShowModal(MODAL.NONE);
 
+      await getTripActivities();
+
       resetNewActivityFields();
 
     } catch (error) {
@@ -66,6 +72,43 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
       setIsCreatingActivity(false);
     }
   }
+
+  function resetNewActivityFields() {
+    setActivityTitle("");
+    setActivityDate("");
+    setActivityHour("");
+  }
+
+  async function getTripActivities() {
+    try {
+      const activities = await activitiesServer.getActivitiesByTripId(tripDetails.id);
+
+      const activitiesToSectionList = activities.map((dayActivity) => ({
+        title: {
+          dayNumber: dayjs(dayActivity.date).date(),
+          dayName: dayjs(dayActivity.date).format("dddd").replace("-feira", "")
+        },
+        data: dayActivity.activities.map((activity) => ({
+          id: activity.id,
+          title: activity.title,
+          hour: dayjs(activity.occurs_at).format("hh[:]mm[h]"),
+          isBefore: dayjs(activity.occurs_at).isBefore(dayjs())
+        }))
+      }));
+
+      setActivities(activitiesToSectionList);
+    } catch (error) {
+      console.log(error);
+      
+    } finally {
+      setIsLoadingActivities(false);
+    }
+  }
+
+  useEffect(() => {
+    getTripActivities();
+  },
+  []);
 
   return (
     <View className="flex-1">
@@ -78,6 +121,35 @@ export function TripActivities({ tripDetails }: TripActivitiesProps) {
           <Text className="text-lg font-bold">Nova Atividade</Text>
         </Button>
       </View>
+
+      <SectionList
+        sections={activities}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Activity data={item} />
+        )}
+        renderSectionHeader={({ section }) => (
+          <View className="w-full">
+            <Text className="text-zinc-50 text-2xl font-semibold py-2">
+              Dia {section.title.dayNumber + " "}
+
+              <Text className="text-zinc-500 text-base font-regular capitalize">
+                {section.title.dayName}
+              </Text>
+            </Text>
+
+            {
+              section.data.length === 0 && (
+                <Text className="text-zinc-500 font-regular text-sm mb-8">
+                  Nenhuma atividade cadastrada nessa data.
+                </Text>
+              )
+            }
+          </View>
+        )}
+        contentContainerClassName="gap-3 pb-48"
+        showsVerticalScrollIndicator={false}
+      />
 
       <Modal
         title="Cadastrar atividade"

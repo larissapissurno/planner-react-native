@@ -1,6 +1,6 @@
 import { api } from "./api"
 
-type Activity = {
+export type Activity = {
   id: string
   occurs_at: string
   title: string
@@ -10,11 +10,13 @@ type ActivityCreate = Omit<Activity, "id"> & {
   tripId: string
 }
 
+export type Activities = {
+  date: string
+  activities: Activity[]
+}
+
 type ActivityResponse = {
-  activities: {
-    date: string
-    activities: Activity[]
-  }[]
+  activities: Activities[]
 }
 
 async function create({ tripId, occurs_at, title }: ActivityCreate) {
@@ -30,7 +32,7 @@ async function create({ tripId, occurs_at, title }: ActivityCreate) {
   }
 }
 
-async function getActivitiesByTripId(tripId: string) {
+async function getActivitiesByTripId(tripId: string): Promise<Activities[]> {
   try {
     const { data } = await api.get<ActivityResponse>(
       `/trips/${tripId}/activities`

@@ -204,7 +204,7 @@ export default function Index() {
 
   useEffect(() => {
     getTrip();
-  }, [getTrip])
+  }, [])
 
   if(isGettingTrip) {
     return <Loading />

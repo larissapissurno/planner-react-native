@@ -142,7 +142,7 @@ export default function Index() {
   async function createTrip() {
     try {
       setIsCreatingTrip(true);
-      
+
       const newTrip = await tripServer.create({
         destination,
         starts_at: dayjs(datesSelected.startsAt?.dateString).toISOString(),
@@ -156,15 +156,13 @@ export default function Index() {
         {
           text: "Ok, vamos lá!",
           onPress: () => saveTripOnLocalStorage(newTrip.tripId),
-        }
+        },
       ]);
-
     } catch (error) {
       setIsCreatingTrip(false);
       console.error("Erro ao criar viagem", error);
       Alert.alert("Erro ao criar viagem", "Tente novamente mais tarde");
       throw error;
-      
     }
   }
 
@@ -181,10 +179,10 @@ export default function Index() {
       if (trip) {
         router.navigate("/trip/" + trip.id);
       }
-      
+
       setIsGettingTrip(false);
     } catch (error) {
-      setIsGettingTrip(false)
+      setIsGettingTrip(false);
       console.error("Erro ao buscar viagem", error);
       Alert.alert("Erro ao buscar viagem", "Tente novamente mais tarde");
       throw error;
@@ -204,10 +202,10 @@ export default function Index() {
 
   useEffect(() => {
     getTrip();
-  }, [])
+  }, []);
 
-  if(isGettingTrip) {
-    return <Loading />
+  if (isGettingTrip) {
+    return <Loading />;
   }
 
   return (
@@ -242,7 +240,7 @@ export default function Index() {
             onPress={() => setShowModal(MODAL.CALENDAR)}
           />
           <Input.Field
-            ref={calendarInputRef}
+            innerRef={calendarInputRef}
             placeholder="Quando?"
             editable={stepForm === StepForm.TRIP_DETAILS}
             onFocus={() => Keyboard.dismiss()}
@@ -273,7 +271,7 @@ export default function Index() {
                 onPress={() => setShowModal(MODAL.GUESTS)}
               />
               <Input.Field
-                ref={guestsInputRef}
+                innerRef={guestsInputRef}
                 placeholder="Quem estará na viagem?"
                 autoCorrect={false}
                 showSoftInputOnFocus={false}

@@ -1,6 +1,12 @@
-import { Platform, TextInput, TextInputProps, View, ViewProps } from "react-native";
+import {
+  Platform,
+  TextInput,
+  TextInputProps,
+  View,
+  ViewProps,
+} from "react-native";
 import clsx from "clsx";
-import { colors } from '@/styles/colors'
+import { colors } from "@/styles/colors";
 
 type Variants = "primary" | "secondary" | "tertiary";
 
@@ -9,7 +15,12 @@ type InputProps = ViewProps & {
   variant?: Variants;
 };
 
-function Input({ children, className, variant = "primary", ...rest }: InputProps) {
+function Input({
+  children,
+  className,
+  variant = "primary",
+  ...rest
+}: InputProps) {
   return (
     <View
       className={clsx(
@@ -28,18 +39,20 @@ function Input({ children, className, variant = "primary", ...rest }: InputProps
   );
 }
 
-type FieldProps = TextInputProps & { ref?: React.Ref<TextInput> };
+type FieldProps = TextInputProps & { innerRef?: React.Ref<TextInput> };
 
-function Field({ref, ...textInputProps}: FieldProps) {
-  return <TextInput
-    ref={ref}
-    className="flex-1 text-zinc-100 font-regular text-lg"
-    placeholderTextColor={colors.zinc[400]}
-    keyboardAppearance="dark"
-    cursorColor={Platform.OS === "android" ? colors.zinc[100] : undefined}
-    selectionColor={Platform.OS === "ios" ? colors.zinc[100] : undefined}
-    {...textInputProps}
-  />;
+function Field({ innerRef, ...textInputProps }: FieldProps) {
+  return (
+    <TextInput
+      ref={innerRef}
+      className="flex-1 text-zinc-100 font-regular text-lg"
+      placeholderTextColor={colors.zinc[400]}
+      keyboardAppearance="dark"
+      cursorColor={Platform.OS === "android" ? colors.zinc[100] : undefined}
+      selectionColor={Platform.OS === "ios" ? colors.zinc[100] : undefined}
+      {...textInputProps}
+    />
+  );
 }
 
 Input.Field = Field;
